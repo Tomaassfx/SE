@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Results</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #a2c2e1, #f0f4f7);
+            color: #333;
+            text-align: center;
+            margin: 0;
+            padding: 0;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        #search-box {
+            width: 60%;
+            max-width: 600px;
+            padding: 15px;
+            font-size: 18px;
+            border-radius: 25px;
+            border: 1px solid #007bff;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        #search-box:focus {
+            border-color: #0056b3;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+        }
+
+        #results {
+            width: 60%;
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+            text-align: left;
+        }
+
+        #results div {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            transition: background-color 0.3s ease;
+        }
+
+        #results div:last-child {
+            border-bottom: none;
+        }
+
+        #results div:hover {
+            background-color: #f1f1f1;
+            cursor: pointer;
+        }
+
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+            margin-bottom: 5px;
+        }
+
+        .summary {
+            font-size: 16px;
+            color: #555;
+        }
+
+        .no-results {
+            font-size: 18px;
+            color: #888;
+            text-align: center;
+            padding: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div id="container">
+        <input type="text" id="search-box" placeholder="Enter search query...">
+        <div id="results"></div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const searchBox = document.getElementById('search-box');
+            const resultsDiv = document.getElementById('results');
+
+            searchBox.addEventListener('input', function () {
+                const query = searchBox.value.trim();
+
+                if (query.length > 0) {
+                    fetch('/search', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'text/plain'
+                        },
+                        body: query
+                    })
+                    .then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    })
+                    .then(data => {
+                        resultsDiv.innerHTML = '';  // Clear previous results
+                        if (Array.isArray(data) && data.length > 0) {  // Check if data is an array
+                            data.forEach(item => {
+                                const div = document.createElement('div');
+                                div.innerHTML = `<div class="title">${item.title || 'No title found'}</div>
+                                                  <div class="summary">${item.summary || 'No summary available'}</div>`;
+                                resultsDiv.appendChild(div);
+                            });
+                        } else {
+                            const div = document.createElement('div');
+                            div.className = 'no-results';
+                            div.textContent = 'No results found.';
+                            resultsDiv.appendChild(div);
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error:', error);
+                    });
+                } else {
+                    resultsDiv.innerHTML = '';
+                }
+            });
+        });
+    </script>
+</body>
+</html>
